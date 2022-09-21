@@ -35,18 +35,6 @@ var _ = Describe("Convergence API", func() {
 			bbsRunner = testrunner.New(bbsBinPath, bbsConfig)
 			bbsProcess = ginkgomon.Invoke(bbsRunner)
 
-			cellPresence := models.NewCellPresence(
-				"some-cell",
-				"cell.example.com",
-				"http://cell.example.com",
-				"the-zone",
-				models.NewCellCapacity(128, 1024, 6),
-				[]string{},
-				[]string{},
-				[]string{},
-				[]string{},
-			)
-			consulHelper.RegisterCell(&cellPresence)
 			processGuid = "some-process-guid"
 			desiredLRP := model_helpers.NewValidDesiredLRP(processGuid)
 			err := client.DesireLRP(logger, desiredLRP)
@@ -122,18 +110,6 @@ var _ = Describe("Convergence API", func() {
 
 				Context("when the cell is back", func() {
 					BeforeEach(func() {
-						cellPresence := models.NewCellPresence(
-							"missing-cell",
-							"cell.example.com",
-							"http://cell.example.com",
-							"the-zone",
-							models.NewCellCapacity(128, 1024, 6),
-							[]string{},
-							[]string{},
-							[]string{},
-							[]string{},
-						)
-						consulHelper.RegisterCell(&cellPresence)
 					})
 
 					It("it transitions back to Ordinary", func() {

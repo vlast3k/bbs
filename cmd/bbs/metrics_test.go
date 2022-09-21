@@ -1,12 +1,13 @@
 package main_test
 
 import (
+	"fmt"
 	"time"
 
 	"code.cloudfoundry.org/bbs/cmd/bbs/testrunner"
-	"code.cloudfoundry.org/clock"
 	"code.cloudfoundry.org/diego-logging-client/testhelpers"
-	"code.cloudfoundry.org/locket"
+	locketconfig "code.cloudfoundry.org/locket/cmd/locket/config"
+	locketrunner "code.cloudfoundry.org/locket/cmd/locket/testrunner"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/tedsuo/ifrit"
@@ -58,14 +59,22 @@ var _ = Describe("Metrics", func() {
 		))
 	})
 
-	Context("when the BBS instance isn't holding the lock", func() {
+	FContext("when the BBS instance isn't holding the lock", func() {
 		var competingBBSLockProcess ifrit.Process
 
 		BeforeEach(func() {
-			competingBBSLock := locket.NewLock(logger, consulClient, locket.LockSchemaPath("bbs_lock"), []byte{}, clock.NewClock(), locket.RetryInterval, locket.DefaultSessionTTL, locket.WithMetronClient(&testhelpers.FakeIngressClient{}))
+			locketPort, err := portAllocator.ClaimPorts(1)
+			Expect(err).NotTo(HaveOccurred())
+
+			locketAddress := fmt.Sprintf("localhost:%d", locketPort)
+			competingBBSLock := locketrunner.NewLocketRunner(locketBinPath, func(cfg *locketconfig.LocketConfig) {
+				cfg.DatabaseConnectionString = sqlRunner.ConnectionString()
+				cfg.DatabaseDriver = sqlRunner.DriverName()
+				cfg.ListenAddress = locketAddress
+			})
 			competingBBSLockProcess = ifrit.Invoke(competingBBSLock)
 
-			bbsRunner.StartCheck = "bbs.consul-lock.acquiring-lock"
+			bbsRunner.StartCheck = "bbs.locket-lock.started"
 		})
 
 		AfterEach(func() {
@@ -80,7 +89,7 @@ var _ = Describe("Metrics", func() {
 			))
 		})
 
-		It("does not emit lrp metrics", func() {
+		FIt("does not emit lrp metrics", func() {
 			Consistently(testMetricsChan, 20*time.Second).ShouldNot(Receive(
 				testhelpers.MatchV2Metric(
 					testhelpers.MetricAndValue{Name: "ConvergenceLRPDuration"},
