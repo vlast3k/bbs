@@ -56,6 +56,7 @@ var (
 	bbsConfig         bbsconfig.BBSConfig
 	bbsRunner         *ginkgomon.Runner
 	bbsProcess        ifrit.Process
+	locketHelper      *test_helpers.LocketHelper
 	auctioneerServer  *ghttp.Server
 	testMetricsChan   chan *loggregator_v2.Envelope
 	locketBinPath     string
@@ -225,6 +226,9 @@ var _ = BeforeEach(func() {
 	}
 
 	bbsConfig.ClientLocketConfig.LocketAddress = locketAddress
+	locketClient, err := locket.NewClient(logger, bbsConfig.ClientLocketConfig)
+	Expect(err).NotTo(HaveOccurred())
+	locketHelper = test_helpers.NewLocketHelper(logger, locketClient)
 })
 
 var _ = AfterEach(func() {

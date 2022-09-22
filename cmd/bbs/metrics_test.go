@@ -1,13 +1,14 @@
 package main_test
 
 import (
-	"fmt"
 	"time"
 
 	"code.cloudfoundry.org/bbs/cmd/bbs/testrunner"
+	"code.cloudfoundry.org/clock"
 	"code.cloudfoundry.org/diego-logging-client/testhelpers"
-	locketconfig "code.cloudfoundry.org/locket/cmd/locket/config"
-	locketrunner "code.cloudfoundry.org/locket/cmd/locket/testrunner"
+	"code.cloudfoundry.org/locket"
+	"code.cloudfoundry.org/locket/lock"
+	locketmodels "code.cloudfoundry.org/locket/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/tedsuo/ifrit"
@@ -59,20 +60,30 @@ var _ = Describe("Metrics", func() {
 		))
 	})
 
-	FContext("when the BBS instance isn't holding the lock", func() {
+	Context("when the BBS instance isn't holding the lock", func() {
 		var competingBBSLockProcess ifrit.Process
 
 		BeforeEach(func() {
-			locketPort, err := portAllocator.ClaimPorts(1)
+			locketClient, err := locket.NewClient(logger, bbsConfig.ClientLocketConfig)
 			Expect(err).NotTo(HaveOccurred())
 
-			locketAddress := fmt.Sprintf("localhost:%d", locketPort)
-			competingBBSLock := locketrunner.NewLocketRunner(locketBinPath, func(cfg *locketconfig.LocketConfig) {
-				cfg.DatabaseConnectionString = sqlRunner.ConnectionString()
-				cfg.DatabaseDriver = sqlRunner.DriverName()
-				cfg.ListenAddress = locketAddress
-			})
-			competingBBSLockProcess = ifrit.Invoke(competingBBSLock)
+			lockIdentifier := &locketmodels.Resource{
+				Key:      "bbs",
+				Owner:    "Your worst enemy.",
+				Value:    "Something",
+				TypeCode: locketmodels.LOCK,
+			}
+
+			clock := clock.NewClock()
+			competingBBSLockRunner := lock.NewLockRunner(
+				logger,
+				locketClient,
+				lockIdentifier,
+				locket.DefaultSessionTTLInSeconds,
+				clock,
+				locket.RetryInterval,
+			)
+			competingBBSLockProcess = ginkgomon.Invoke(competingBBSLockRunner)
 
 			bbsRunner.StartCheck = "bbs.locket-lock.started"
 		})
@@ -89,7 +100,7 @@ var _ = Describe("Metrics", func() {
 			))
 		})
 
-		FIt("does not emit lrp metrics", func() {
+		It("does not emit lrp metrics", func() {
 			Consistently(testMetricsChan, 20*time.Second).ShouldNot(Receive(
 				testhelpers.MatchV2Metric(
 					testhelpers.MetricAndValue{Name: "ConvergenceLRPDuration"},
