@@ -76,7 +76,7 @@ var _ = Describe("Convergence API", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			FIt("makes the LRP suspect", func() {
+			It("makes the LRP suspect", func() {
 				Eventually(func() models.ActualLRP_Presence {
 					group, err := client.ActualLRPGroupByProcessGuidAndIndex(logger, processGuid, 0)
 					Expect(err).NotTo(HaveOccurred())
