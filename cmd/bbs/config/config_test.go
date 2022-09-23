@@ -36,15 +36,12 @@ var _ = Describe("BBSConfig", func() {
 			"cell_registrations_locket_enabled": true,
 			"cert_file": "/var/vcap/jobs/bbs/config/bbs.crt",
 			"communication_timeout": "20s",
-			"consul_cluster": "",
 			"converge_repeat_interval": "30s",
 			"convergence_workers": 20,
 			"database_connection_string": "",
 			"database_driver": "postgres",
 			"debug_address": "127.0.0.1:17017",
 			"desired_lrp_creation_timeout": "1m0s",
-			"detect_consul_cell_registrations": true,
-			"enable_consul_service_registration": false,
 			"encryption_keys": {"label": "key"},
 			"expire_completed_task_duration": "2m0s",
 			"expire_pending_task_duration": "30m0s",
@@ -82,7 +79,6 @@ var _ = Describe("BBSConfig", func() {
 			"report_interval": "1m0s",
 			"require_ssl": true,
 			"session_name": "bbs-session",
-			"skip_consul_lock": true,
 			"sql_ca_cert_file": "/var/vcap/jobs/bbs/config/sql.ca",
 			"sql_enable_identity_verification": true,
 			"task_callback_workers": 1000,
@@ -137,9 +133,7 @@ var _ = Describe("BBSConfig", func() {
 			DebugServerConfig: debugserver.DebugServerConfig{
 				DebugAddress: "127.0.0.1:17017",
 			},
-			DesiredLRPCreationTimeout:       durationjson.Duration(1 * time.Minute),
-			DetectConsulCellRegistrations:   true,
-			EnableConsulServiceRegistration: false,
+			DesiredLRPCreationTimeout: durationjson.Duration(1 * time.Minute),
 			EncryptionConfig: encryption.EncryptionConfig{
 				ActiveKeyLabel: "label",
 				EncryptionKeys: map[string]string{
@@ -183,7 +177,6 @@ var _ = Describe("BBSConfig", func() {
 			SessionName:                   "bbs-session",
 			TaskCallbackWorkers:           1000,
 			UpdateWorkers:                 1000,
-			SkipConsulLock:                true,
 			MaxTaskRetries:                3,
 		}
 
