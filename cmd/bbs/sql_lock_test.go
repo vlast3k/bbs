@@ -41,7 +41,6 @@ var _ = Describe("SqlLock", func() {
 
 		bbsConfig.ClientLocketConfig = locketrunner.ClientLocketConfig()
 		bbsConfig.ClientLocketConfig.LocketAddress = locketAddress
-		bbsConfig.LocksLocketEnabled = true
 	})
 
 	JustBeforeEach(func() {
@@ -57,18 +56,13 @@ var _ = Describe("SqlLock", func() {
 	})
 
 	Context("with invalid configuration", func() {
-		Context("when LocketEnabled is true", func() {
+		Context("when the locket address is not configured", func() {
 			BeforeEach(func() {
-				bbsConfig.LocksLocketEnabled = true
+				bbsConfig.LocketAddress = ""
 			})
-			Context("when the locket address is not configured", func() {
-				BeforeEach(func() {
-					bbsConfig.LocketAddress = ""
-				})
 
-				It("exits with an error", func() {
-					Eventually(bbsProcess.Wait()).Should(Receive(Not(BeNil())))
-				})
+			It("exits with an error", func() {
+				Eventually(bbsProcess.Wait()).Should(Receive(Not(BeNil())))
 			})
 		})
 

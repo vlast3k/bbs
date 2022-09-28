@@ -243,18 +243,7 @@ func main() {
 		lock = jointlock.NewJointLock(clock, 2*time.Second, locks...)
 	}
 
-	var locketCellPresenceClient locketmodels.LocketClient
-	locketCellPresenceClient = serviceclient.NewNoopLocketClient()
-	if bbsConfig.CellRegistrationsLocketEnabled {
-		if locketClient == nil {
-			locketClient, err = locket.NewClient(logger, bbsConfig.ClientLocketConfig)
-			if err != nil {
-				logger.Fatal("failed-to-create-locket-client", err)
-			}
-		}
-		locketCellPresenceClient = locketClient
-	}
-	serviceClient := serviceclient.NewServiceClient(locketCellPresenceClient)
+	serviceClient := serviceclient.NewServiceClient(locketClient)
 
 	logger.Info("report-interval", lager.Data{"value": bbsConfig.ReportInterval})
 	fileDescriptorTicker := clock.NewTicker(time.Duration(bbsConfig.ReportInterval))

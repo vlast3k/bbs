@@ -42,7 +42,6 @@ var _ = Describe("CellPresence", func() {
 
 		bbsConfig.ClientLocketConfig = locketrunner.ClientLocketConfig()
 		bbsConfig.LocketAddress = locketAddress
-		bbsConfig.CellRegistrationsLocketEnabled = true
 	})
 
 	JustBeforeEach(func() {

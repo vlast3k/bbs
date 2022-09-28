@@ -191,11 +191,10 @@ var _ = BeforeEach(func() {
 		AdvertiseURL:      bbsURL.String(),
 		AuctioneerAddress: auctioneerServer.URL(),
 
-		DatabaseDriver:                 sqlRunner.DriverName(),
-		DatabaseConnectionString:       sqlRunner.ConnectionString(),
-		ReportInterval:                 durationjson.Duration(time.Second / 2),
-		HealthAddress:                  bbsHealthAddress,
-		CellRegistrationsLocketEnabled: false,
+		DatabaseDriver:           sqlRunner.DriverName(),
+		DatabaseConnectionString: sqlRunner.ConnectionString(),
+		ReportInterval:           durationjson.Duration(time.Second / 2),
+		HealthAddress:            bbsHealthAddress,
 
 		ClientLocketConfig: locketrunner.ClientLocketConfig(),
 
