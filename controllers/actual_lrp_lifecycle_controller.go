@@ -185,7 +185,9 @@ func (h *ActualLRPLifecycleController) CrashActualLRP(ctx context.Context, logge
 	if err != nil {
 		return err
 	}
-
+	
+        lrps[0].CrashCount = after.CrashCount - 1;
+	
 	afterLRPs := eventCalculator.RecordChange(before, after, lrps)
 	go eventCalculator.EmitEvents(lrps, afterLRPs)
 
